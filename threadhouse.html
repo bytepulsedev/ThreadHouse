@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!-- demo -->
+<title>ThreadHouse</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Syne:wght@600..800&family=Manrope:wght@400..700&display=swap">
+<style>
+/* Intro, category chips with search, four-up product grid, cart with live totals. */
+
+:root{--bg:#F7F2F5;--surface:#FEFDFE;--fg:#26121C;--muted:#694F5C;--line:#E2D4DB;--accent:#A3225F;--accent-fg:#FFFFFF;--warn:#9A5B00;--ok:#0B7A52;--bad:#B3261E;--fd:'Syne',system-ui,sans-serif;--fb:'Manrope',system-ui,sans-serif;--mono:ui-monospace,Menlo,Consolas,monospace}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1B0E14;--surface:#291720;--fg:#F0E6EB;--muted:#BCA9B2;--line:#402B36;--accent:#FF8EC0;--accent-fg:#1B0E14;--warn:#F0B35A;--ok:#4FD6A0;--bad:#FF9A90;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#1B0E14;--surface:#291720;--fg:#F0E6EB;--muted:#BCA9B2;--line:#402B36;--accent:#FF8EC0;--accent-fg:#1B0E14;--warn:#F0B35A;--ok:#4FD6A0;--bad:#FF9A90;color-scheme:dark}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--fg);font-family:var(--fb);font-size:16px;line-height:1.6;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0}
+.wrap{max-width:1080px;margin:0 auto}
+h1,h2,h3{font-family:var(--fd);line-height:1.1;margin:0;text-wrap:balance;letter-spacing:-.01em}
+p{margin:0}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:4px}
+.demo{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 16px;padding-block:10px;font-size:13px;color:var(--muted);border-bottom:1px solid var(--line)}
+.demo a{color:var(--accent);font-weight:600;text-decoration:none}
+.brandbar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 20px;padding-block:16px}
+.brand{font-family:var(--fd);font-weight:700;font-size:22px;text-decoration:none}
+.brandbar nav{display:flex;gap:4px;flex-wrap:wrap}
+.brandbar nav a{padding:6px 10px;font-size:14px;color:var(--muted);text-decoration:none;border-radius:8px}
+.brandbar nav a:hover{color:var(--fg)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 20px;border-radius:10px;font:600 15px var(--fb);text-decoration:none;border:1px solid var(--fg);background:transparent;color:var(--fg);cursor:pointer}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-fg)}
+.btn.small{padding:7px 12px;font-size:13px;border-radius:8px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+section{padding-block:60px;border-top:1px solid var(--line)}
+.head{display:grid;gap:12px;margin-bottom:32px;max-width:60ch}
+.head h2{font-size:clamp(28px,4vw,42px)}
+.head p{color:var(--muted)}
+form{display:grid;gap:14px}
+label{display:grid;gap:6px;font-size:13px;font-weight:600}
+input,select,textarea{font:inherit;font-weight:400;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:11px 12px;width:100%}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.err{color:var(--bad);font-size:14px;min-height:1.2em}
+.ok{padding:16px;border-radius:12px;border:1px solid var(--ok);color:var(--fg);background:var(--bg)}
+.ok b{color:var(--ok)}
+footer{border-top:1px solid var(--line);padding-block:28px 36px;display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;color:var(--muted);font-size:14px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font:500 14px var(--fb);padding:8px 16px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--fg);cursor:pointer}
+.chip[aria-pressed="true"],.chip[aria-selected="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+@media(max-width:900px){.two{grid-template-columns:1fr}}
+@media(max-width:600px){section{padding-block:44px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
+
+
+.hero{padding-block:48px 36px;display:grid;gap:12px;max-width:62ch}
+.hero h1{font-size:clamp(34px,5.4vw,60px)}
+.hero p{color:var(--muted);font-size:18px}
+.tools{display:flex;flex-wrap:wrap;gap:14px 20px;align-items:center;justify-content:space-between;margin-bottom:24px}
+.tools input{max-width:280px}
+.products{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+.prod{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column;min-width:0}
+.tile{aspect-ratio:4/5;display:flex;flex-direction:column;justify-content:space-between;padding:16px;color:#fff;background:linear-gradient(150deg,var(--c1),var(--c2))}
+.tile b{font:700 20px/1.15 var(--fd);text-wrap:balance;text-shadow:0 1px 10px rgba(0,0,0,.25)}
+.tile span{font:500 12px var(--mono);letter-spacing:.08em;text-transform:uppercase;opacity:.92}
+.pinfo{padding:14px 14px 16px;display:grid;gap:6px}
+.pinfo h3{font-size:17px}
+.pinfo p{color:var(--muted);font-size:14px}
+.prow{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:6px}
+.price{font-family:var(--mono);font-weight:600;font-size:15px}
+.cart{display:grid;grid-template-columns:1.3fr .7fr;gap:36px;align-items:start}
+.cart>*{min-width:0}
+.lines{display:grid;gap:0}
+.line{display:grid;grid-template-columns:1fr auto auto;gap:6px 16px;align-items:center;padding:14px 0;border-bottom:1px solid var(--line)}
+.line .nm{font-weight:600}
+.line .sub{color:var(--muted);font-size:13px}
+.qty{display:inline-flex;align-items:center;gap:8px}
+.qty button{width:32px;height:32px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--fg);font:600 16px var(--fb);cursor:pointer}
+.sum{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px;display:grid;gap:10px}
+.sum div{display:flex;justify-content:space-between;gap:12px;font-size:15px}
+.sum .tot{font-weight:700;font-size:18px;border-top:1px solid var(--line);padding-top:10px}
+.empty{color:var(--muted);padding:20px 0}
+.cartlink{font-weight:600;text-decoration:none;color:var(--accent)}
+@media(max-width:960px){.products{grid-template-columns:repeat(2,1fr)}.cart{grid-template-columns:1fr}}
+@media(max-width:420px){.products{grid-template-columns:1fr}.tile{aspect-ratio:16/10}}
+
+</style>
+<style>html{color-scheme:light}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+<div class="wrap demo"><span>Demo project by BytePulseDev. All names and data are made up.</span><a href="index.html" target="_blank" rel="noopener">BytePulseDev portfolio ↗</a></div>
+<div class="wrap brandbar"><a class="brand" href="#top">ThreadHouse</a><nav><a href="#shop">Shop</a><a class="cartlink" href="#cart" id="cartLink">Cart (0)</a></nav></div>
+<main class="wrap" id="top"><div class="hero"><p class="eyebrow">New season, cut for the heat</p><h1>Clothes that fit well and feel light.</h1><p>Kurtas, shirts, trousers and wraps in breathable fabrics. Free delivery over Rs. 8,000.</p></div><section id="shop" style="border-top:0;padding-top:20px"><div class="tools"><div class="chips" id="cats" role="group" aria-label="Categories"></div><label for="q" style="max-width:280px;width:100%"><span class="eyebrow">Search</span><input id="q" type="search" placeholder="Kurta, shawl, jacket"></label></div><div class="products" id="grid"></div></section><section id="cart"><div class="head"><p class="eyebrow">Your cart</p><h2>Review and order</h2></div><div class="cart"><div class="lines" id="lines"></div><div class="sum"><div><span>Subtotal</span><span id="sub">Rs. 0</span></div><div><span>Delivery</span><span id="ship">Rs. 0</span></div><div class="tot"><span>Total</span><span id="tot">Rs. 0</span></div><p class="eyebrow" id="freeNote"></p><button class="btn primary" id="order" type="button" disabled>Place order</button><div class="ok" id="ok" hidden></div></div></div></section></main>
+<footer class="wrap"><span>© 2026 ThreadHouse · Demo website</span><span>Built by <a href="index.html" target="_blank" rel="noopener">BytePulseDev</a></span></footer>
+
+<script>
+(function(){
+  var P=[{"id": 1, "name": "Linen Kurta", "sub": "Relaxed fit, breathable", "price": 3900, "cat": "Men", "c1": "#2F5D50", "c2": "#8FD1B7", "tile": "Linen Kurta", "tag": "Kurta"}, {"id": 2, "name": "Cotton Shalwar Set", "sub": "Everyday comfort", "price": 4500, "cat": "Men", "c1": "#2D3F6B", "c2": "#7C97E0", "tile": "Cotton Shalwar Set", "tag": "Set"}, {"id": 3, "name": "Block-print Shirt", "sub": "Hand-printed cotton", "price": 3200, "cat": "Women", "c1": "#8A2D4F", "c2": "#F08AB0", "tile": "Block-print Shirt", "tag": "Shirt"}, {"id": 4, "name": "Wide-leg Trousers", "sub": "High waist, soft drape", "price": 3600, "cat": "Women", "c1": "#4A3B2A", "c2": "#C9A36F", "tile": "Wide-leg Trousers", "tag": "Trouser"}, {"id": 5, "name": "Embroidered Dupatta", "sub": "Chiffon with thread work", "price": 2800, "cat": "Women", "c1": "#5B2D8A", "c2": "#C08AF0", "tile": "Embroidered Dupatta", "tag": "Dupatta"}, {"id": 6, "name": "Denim Jacket", "sub": "Washed, unlined", "price": 6200, "cat": "Men", "c1": "#1D3557", "c2": "#5C8DC4", "tile": "Denim Jacket", "tag": "Jacket"}, {"id": 7, "name": "Everyday Tote", "sub": "Canvas with leather straps", "price": 2400, "cat": "Accessories", "c1": "#6B4A1E", "c2": "#E0B060", "tile": "Everyday Tote", "tag": "Bag"}, {"id": 8, "name": "Wool Shawl", "sub": "Light, warm, soft edge", "price": 4800, "cat": "Accessories", "c1": "#7A2E2E", "c2": "#E08A7A", "tile": "Wool Shawl", "tag": "Shawl"}], CATS=["All", 3900, 4500, 3200, 3600, 2800, 6200, 2400, 4800], FREE=8000, SHIP=300;
+  var cart={}, cat='All', q='';
+  var grid=document.getElementById('grid'),catsEl=document.getElementById('cats');
+  function rs(n){return 'Rs. '+n.toLocaleString('en-PK');}
+  function drawCats(){
+    catsEl.innerHTML='';
+    CATS.forEach(function(c){
+      var b=document.createElement('button');b.type='button';b.className='chip';b.textContent=c;
+      b.setAttribute('aria-pressed',c===cat?'true':'false');
+      b.addEventListener('click',function(){cat=c;drawCats();drawGrid();});
+      catsEl.appendChild(b);
+    });
+  }
+  function drawGrid(){
+    grid.innerHTML='';
+    var shown=P.filter(function(p){
+      return (cat==='All'||p.cat===cat)&&(q===''||(p.name+' '+p.sub).toLowerCase().indexOf(q)>-1);
+    });
+    if(!shown.length){var e=document.createElement('p');e.className='empty';e.textContent='Nothing matches that search.';grid.appendChild(e);return;}
+    shown.forEach(function(p){
+      var a=document.createElement('article');a.className='prod';
+      var t=document.createElement('div');t.className='tile';t.style.setProperty('--c1',p.c1);t.style.setProperty('--c2',p.c2);
+      var s=document.createElement('span');s.textContent=p.tag;var b=document.createElement('b');b.textContent=p.tile;
+      t.appendChild(s);t.appendChild(b);
+      var i=document.createElement('div');i.className='pinfo';
+      var h=document.createElement('h3');h.textContent=p.name;
+      var d=document.createElement('p');d.textContent=p.sub;
+      var r=document.createElement('div');r.className='prow';
+      var pr=document.createElement('span');pr.className='price';pr.textContent=rs(p.price);
+      var bt=document.createElement('button');bt.type='button';bt.className='btn small primary';bt.textContent='Add to cart';
+      bt.addEventListener('click',function(){cart[p.id]=(cart[p.id]||0)+1;drawCart();});
+      r.appendChild(pr);r.appendChild(bt);i.appendChild(h);i.appendChild(d);i.appendChild(r);
+      a.appendChild(t);a.appendChild(i);grid.appendChild(a);
+    });
+  }
+  function drawCart(){
+    var lines=document.getElementById('lines');lines.innerHTML='';
+    var ids=Object.keys(cart).filter(function(k){return cart[k]>0;});
+    var sub=0,count=0;
+    if(!ids.length){var e=document.createElement('p');e.className='empty';e.textContent='Your cart is empty. Add something from the shop.';lines.appendChild(e);}
+    ids.forEach(function(id){
+      var p=P.filter(function(x){return String(x.id)===id;})[0],n=cart[id];
+      sub+=p.price*n;count+=n;
+      var l=document.createElement('div');l.className='line';
+      var w=document.createElement('div');
+      var a=document.createElement('div');a.className='nm';a.textContent=p.name;
+      var c=document.createElement('div');c.className='sub';c.textContent=rs(p.price)+' each';
+      w.appendChild(a);w.appendChild(c);
+      var q2=document.createElement('div');q2.className='qty';
+      var m=document.createElement('button');m.type='button';m.textContent='−';m.setAttribute('aria-label','Remove one '+p.name);
+      var v=document.createElement('span');v.textContent=n;
+      var pl=document.createElement('button');pl.type='button';pl.textContent='+';pl.setAttribute('aria-label','Add one '+p.name);
+      m.addEventListener('click',function(){cart[id]--;drawCart();});
+      pl.addEventListener('click',function(){cart[id]++;drawCart();});
+      q2.appendChild(m);q2.appendChild(v);q2.appendChild(pl);
+      var tt=document.createElement('span');tt.className='price';tt.textContent=rs(p.price*n);
+      l.appendChild(w);l.appendChild(q2);l.appendChild(tt);lines.appendChild(l);
+    });
+    var ship=(sub===0||sub>=FREE)?0:SHIP;
+    document.getElementById('sub').textContent=rs(sub);
+    document.getElementById('ship').textContent=ship?rs(ship):'Free';
+    document.getElementById('tot').textContent=rs(sub+ship);
+    document.getElementById('freeNote').textContent=sub>0&&sub<FREE?('Add '+rs(FREE-sub)+' more for free delivery'):'Free delivery over '+rs(FREE);
+    document.getElementById('order').disabled=!ids.length;
+    document.getElementById('cartLink').textContent='Cart ('+count+')';
+  }
+  document.getElementById('q').addEventListener('input',function(e){q=e.target.value.trim().toLowerCase();drawGrid();});
+  document.getElementById('order').addEventListener('click',function(){
+    var ok=document.getElementById('ok');ok.innerHTML='';
+    var b=document.createElement('b');b.textContent='Order placed. ';
+    ok.appendChild(b);ok.appendChild(document.createTextNode('This is a demo store, so no payment was taken and nothing will ship.'));
+    ok.hidden=false;cart={};drawCart();
+  });
+  drawCats();drawGrid();drawCart();
+})();
+</script>
+</body>
+</html>
